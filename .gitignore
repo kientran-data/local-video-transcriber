@@ -1,0 +1,63 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+.venv/
+venv/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Ruff
+.ruff_cache/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+# Environment
+.env
+
+# Application cache
+.transcriber-cache/
+.cache/
+
+# Generated output
+output/
+outputs/
+
+# Whisper / HuggingFace model cache
+models/
+huggingface/
+
+# Media
+*.mp4
+*.mkv
+*.mov
+*.webm
+*.avi
+
+# Audio
+*.wav
+*.mp3
+*.m4a
+*.flac
+*.aac
+
+# Generated transcripts
+*.srt
+*.vtt
+
+# Temporary
+tmp/
+temp/
+*.tmp
