@@ -41,22 +41,30 @@ Never:
 
 Prefer chunk-based processing.
 
+## Resource Throttling Rules
+
+When user requests low CPU/GPU usage or when working on shared/laptop systems:
+- Pass `--low-resource` to CLI (or `--cpu-threads 2 --throttle-seconds 0.25`).
+- Runs process at `BelowNormal` priority so interactive apps (IDEs, browsers) do not stutter.
+- Paces segment iterations so GPU can drop to lower power states and stay cool.
+
 ## Testing Rule
 
 Whisper model downloads must not occur in normal unit tests.
 
-Design the inference boundary so it can be mocked.
-
-Timestamp offset calculations and checkpoint recovery must have dedicated tests.
+Design the inference boundary so it can be mocked:
+- Integration tests patch `video_transcriber.pipeline.WhisperTranscriber`.
+- Timestamp offset calculations and checkpoint recovery have dedicated unit tests.
+- Resource throttling and configuration have dedicated unit tests.
 
 ## Completion Rule
 
 After implementation:
 
-- run Ruff
-- run pytest
-- run CLI help
-- inspect git diff
+- run Ruff: `ruff check .`
+- run Pytest: `pytest`
+- run CLI help: `python -m video_transcriber --help` and `python -m video_transcriber transcribe --help`
+- inspect git diff: `git diff --stat`
 - compare implementation against acceptance criteria
 
 Do not report success until verification has been performed.

@@ -5,7 +5,7 @@ from .models import TranscriptionConfig
 from .pipeline import run_pipeline
 
 app = typer.Typer(help="Local Video Transcriber")
-console = Console()
+console = Console(legacy_windows=False)
 
 @app.callback()
 def main():
@@ -24,11 +24,23 @@ def transcribe(
     keep_cache: bool = typer.Option(False, help="Keep intermediate chunk files."),
     force: bool = typer.Option(False, help="Force retranscription, ignoring checkpoints."),
     verbose: bool = typer.Option(False, help="Enable verbose logging."),
+    low_resource: bool = typer.Option(False, help="Limit CPU and GPU utilization (low priority, throttled)."),
+    cpu_threads: int = typer.Option(0, help="Limit CPU threads (0 = default/auto)."),
+    throttle_seconds: float = typer.Option(0.0, help="Pause in seconds between transcription segments."),
 ):
     """
     Transcribe a local video or audio file.
     """
     try:
+        if low_resource:
+            if cpu_threads == 0:
+                cpu_threads = 2
+            if throttle_seconds == 0.0:
+                throttle_seconds = 0.25
+            low_priority = True
+        else:
+            low_priority = False
+
         config = TranscriptionConfig(
             model=model,
             language=language,
@@ -36,7 +48,10 @@ def transcribe(
             compute_type=compute_type,
             chunk_minutes=chunk_minutes,
             word_timestamps=word_timestamps,
-            vad_enabled=True
+            vad_enabled=True,
+            cpu_threads=cpu_threads,
+            throttle_seconds=throttle_seconds,
+            low_priority=low_priority
         )
         
         run_pipeline(

@@ -140,6 +140,16 @@ int8
 
 ---
 
+# 7.1 Resource Control & Throttling
+
+To prevent laptop overheating and CPU/GPU contention during long jobs:
+
+- `--low-resource`: Sets process priority to BelowNormal, limits CPU threads to 2, and sleeps 0.25s between segment iterations.
+- `--cpu-threads <N>`: Restricts number of CPU threads used by faster-whisper.
+- `--throttle-seconds <float>`: Inserts a pause between segment decoding to allow GPU thermal dissipation.
+
+---
+
 # 8. Progress
 
 User should be able to see:

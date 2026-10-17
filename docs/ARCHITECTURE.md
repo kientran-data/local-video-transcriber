@@ -56,7 +56,6 @@ src/
     ├── __init__.py
     ├── __main__.py
     ├── cli.py
-    ├── config.py
     ├── models.py
     ├── hardware.py
     ├── media.py
@@ -378,3 +377,25 @@ MVP may transcribe chunks sequentially.
 GPU inference is already computationally intensive.
 
 Do not implement parallel chunk transcription until benchmarked.
+
+---
+
+# 17. Resource Management & Throttling
+
+Running continuous large-model inference on laptops or shared development environments can cause excessive heat, loud cooling fans, and CPU starvation for other processes.
+
+Architecture controls:
+1. **Process Priority (`BelowNormal`)**: Uses `psutil` or Win32 `SetPriorityClass` to lower OS process scheduling priority, guaranteeing zero stutter for interactive processes (IDEs, browsers, node dev servers).
+2. **CPU Thread Limiting (`cpu_threads`)**: Restricts faster-whisper/OpenMP CPU threads to a bounded pool (default 2 threads in low-resource mode) instead of claiming all logical cores.
+3. **Segment Yield Pacing (`throttle_seconds`)**: Pauses between decoded segments in the generator loop (`time.sleep`). This introduces brief idle gaps between CUDA kernel launches, allowing the GPU to throttle down to lower P-states and drop thermal levels significantly (e.g. from 78°C to 67°C).
+
+---
+
+# 18. Platform Compatibility
+
+1. **Windows Console Unicode**:
+   Windows console streams (`stdout`/`stderr`) often default to legacy code pages (e.g. `cp1252`), causing `UnicodeEncodeError` when printing Vietnamese characters. `__init__.py` reconfigures streams to `utf-8`.
+2. **PyAV >= 15 Keyword Compatibility**:
+   Recent PyAV releases removed the `metadata_errors` keyword argument from `av.open`. A compatibility wrapper in `__init__.py` and `transcriber.py` ensures seamless audio decoding across library versions.
+3. **cuBLAS 12 DLL Resolution**:
+   On Windows, CUDA 12 requires `cublas64_12.dll` and `cublasLt64_12.dll`. `hardware.py` verifies both CUDA device accessibility and DLL loadability before routing to CUDA `float16`.

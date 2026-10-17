@@ -114,13 +114,13 @@ Implementation should approximately follow:
 src/video_transcriber/
     __init__.py
     cli.py
-    config.py
     models.py
     hardware.py
     media.py
     chunker.py
     transcriber.py
     checkpoint.py
+    merger.py
     pipeline.py
     exporters/
         __init__.py
@@ -368,7 +368,7 @@ Target interface:
 
 video-transcriber transcribe SOURCE
 
-Useful options should include:
+Useful options include:
 
 --language
 --model
@@ -379,6 +379,28 @@ Useful options should include:
 --word-timestamps
 --keep-cache
 --force
+--verbose
+--low-resource
+--cpu-threads
+--throttle-seconds
+
+---
+
+# Resource Management & Throttling
+
+To prevent laptop overheating and CPU/GPU contention during long jobs:
+
+- `--low-resource`: Automatically enables `BelowNormal` process priority class, limits CPU threads to 2, and sleeps 0.25s between segment iterations.
+- `--cpu-threads`: Explicitly limits CPU worker threads (prevents 100% utilization across all CPU cores).
+- `--throttle-seconds`: Paces segment generator iterations (`time.sleep`) allowing GPU to lower clock speeds and dissipate thermal build-up.
+
+---
+
+# Platform & Compatibility
+
+- **Windows Console UTF-8**: `src/video_transcriber/__init__.py` reconfigures `sys.stdout` and `sys.stderr` to UTF-8 to prevent `UnicodeEncodeError` when printing Vietnamese text or filenames.
+- **cuBLAS 12 on Windows**: `hardware.py` verifies CUDA and cuBLAS DLL availability (`cublas64_12.dll`) before selecting CUDA.
+- **PyAV >= 15**: Compatibility patch removes `metadata_errors` argument from `av.open` calls.
 
 Provide:
 

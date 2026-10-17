@@ -13,10 +13,14 @@ def format_srt_timestamp(seconds: float) -> str:
 
 def export_srt(result: TranscriptionResult, path: Path) -> None:
     with open(path, "w", encoding="utf-8") as f:
-        for i, seg in enumerate(result.segments, start=1):
+        idx = 1
+        for seg in result.segments:
+            text = seg.text.strip()
+            if not text:
+                continue
             start = format_srt_timestamp(seg.start)
             end = format_srt_timestamp(seg.end)
-            text = seg.text.strip()
-            f.write(f"{i}\n")
+            f.write(f"{idx}\n")
             f.write(f"{start} --> {end}\n")
             f.write(f"{text}\n\n")
+            idx += 1

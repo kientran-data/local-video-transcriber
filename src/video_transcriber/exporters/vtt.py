@@ -15,8 +15,10 @@ def export_vtt(result: TranscriptionResult, path: Path) -> None:
     with open(path, "w", encoding="utf-8") as f:
         f.write("WEBVTT\n\n")
         for seg in result.segments:
+            text = seg.text.strip()
+            if not text:
+                continue
             start = format_vtt_timestamp(seg.start)
             end = format_vtt_timestamp(seg.end)
-            text = seg.text.strip()
             f.write(f"{start} --> {end}\n")
             f.write(f"{text}\n\n")

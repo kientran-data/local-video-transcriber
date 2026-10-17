@@ -13,7 +13,8 @@ def format_timestamp(seconds: float) -> str:
 def export_txt(result: TranscriptionResult, path: Path) -> None:
     with open(path, "w", encoding="utf-8") as f:
         for seg in result.segments:
-            ts = format_timestamp(seg.start)
-            # Remove leading space that Whisper might return
             text = seg.text.strip()
+            if not text:
+                continue
+            ts = format_timestamp(seg.start)
             f.write(f"{ts} {text}\n")

@@ -16,6 +16,24 @@ from .transcriber import WhisperTranscriber
 class PipelineError(Exception):
     pass
 
+def _apply_low_priority(console: Console) -> None:
+    try:
+        import psutil
+        p = psutil.Process()
+        p.nice(psutil.BELOW_NORMAL_PRIORITY_CLASS)
+        console.print("[yellow]Applied low process priority (BelowNormal) to reduce CPU contention.[/yellow]")
+    except Exception:
+        try:
+            import ctypes
+            k32 = ctypes.windll.kernel32
+            k32.GetCurrentProcess.restype = ctypes.c_void_p
+            k32.SetPriorityClass.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+            k32.SetPriorityClass.restype = ctypes.c_bool
+            k32.SetPriorityClass(k32.GetCurrentProcess(), 0x4000)
+            console.print("[yellow]Applied low process priority (BelowNormal).[/yellow]")
+        except Exception:
+            pass
+
 def run_pipeline(
     source_path: str,
     config: TranscriptionConfig,
@@ -35,6 +53,14 @@ def run_pipeline(
     console.print(f"Media Duration: [green]{media.duration_seconds:.2f}s[/green]")
     console.print(f"Hardware: Device=[magenta]{device}[/magenta], Compute=[magenta]{compute_type}[/magenta]")
     
+    if config.low_priority:
+        _apply_low_priority(console)
+    if config.throttle_seconds > 0 or config.cpu_threads > 0:
+        console.print(
+            f"Resource Limits: Throttle=[magenta]{config.throttle_seconds}s/segment[/magenta], "
+            f"CPU Threads=[magenta]{config.cpu_threads or 'default'}[/magenta]"
+        )
+
     # 3. Job Identity & Checkpointing
     job_id = generate_job_id(
         media.absolute_path,

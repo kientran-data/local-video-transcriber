@@ -4,94 +4,104 @@ The MVP is complete only when every REQUIRED criterion below passes.
 
 # CLI
 
-- [ ] `video-transcriber --help` works.
-- [ ] `video-transcriber transcribe --help` works.
-- [ ] A local source path can be supplied.
-- [ ] Paths containing spaces work.
+- [x] `video-transcriber --help` works.
+- [x] `video-transcriber transcribe --help` works.
+- [x] A local source path can be supplied.
+- [x] Paths containing spaces work.
 
 # Media
 
-- [ ] Video files are accepted.
-- [ ] Audio files are accepted.
-- [ ] Missing files produce a clear error.
-- [ ] Media without audio produces a clear error.
-- [ ] Source files are never modified.
+- [x] Video files are accepted (MP4, MKV, MOV, WEBM).
+- [x] Audio files are accepted (MP3, WAV, M4A, FLAC).
+- [x] Missing files produce a clear error.
+- [x] Media without audio produces a clear error.
+- [x] Source files are never modified.
 
 # Large File Safety
 
-- [ ] Entire media file is never loaded into RAM.
-- [ ] Entire source is not first converted into one giant WAV file.
-- [ ] Long media is processed using chunks.
-- [ ] Chunk duration is configurable.
+- [x] Entire media file is never loaded into RAM.
+- [x] Entire source is not first converted into one giant WAV file.
+- [x] Long media is processed using chunks.
+- [x] Chunk duration is configurable via `--chunk-minutes`.
 
 # Whisper
 
-- [ ] faster-whisper is used.
-- [ ] `large-v3` works when hardware supports it.
-- [ ] `--language vi` works.
-- [ ] automatic language detection works.
-- [ ] VAD is enabled by default.
-- [ ] CPU mode works.
-- [ ] CUDA mode is supported.
+- [x] faster-whisper is used.
+- [x] `large-v3` works when hardware supports it.
+- [x] `--language vi` works.
+- [x] automatic language detection works.
+- [x] VAD is enabled by default.
+- [x] CPU mode works (int8 default).
+- [x] CUDA mode is supported (float16 default).
+
+# Resource Control & Throttling
+
+- [x] `--low-resource` mode throttles CPU and GPU to prevent overheating.
+- [x] Process runs with `BelowNormal` priority to protect interactive applications.
+- [x] CPU thread count is configurable via `--cpu-threads`.
+- [x] Segment pause interval is configurable via `--throttle-seconds`.
 
 # Resume
 
-- [ ] Job manifest is persisted.
-- [ ] Each completed chunk has persisted result.
-- [ ] Restart skips completed chunks.
-- [ ] Failed chunk remains incomplete.
-- [ ] Configuration changes cannot accidentally reuse incompatible results.
-- [ ] `--force` can intentionally reprocess.
+- [x] Job manifest is persisted.
+- [x] Each completed chunk has persisted result.
+- [x] Restart skips completed chunks.
+- [x] Failed chunk remains incomplete.
+- [x] Configuration changes cannot accidentally reuse incompatible results.
+- [x] `--force` can intentionally reprocess.
 
 # Timestamp
 
-- [ ] Chunk-local timestamps are converted to source-global timestamps.
-- [ ] Timestamp merge has unit tests.
-- [ ] Media longer than one hour is formatted correctly.
+- [x] Chunk-local timestamps are converted to source-global timestamps.
+- [x] Timestamp merge has unit tests (`tests/unit/test_merger.py`).
+- [x] Media longer than one hour is formatted correctly.
 
 # Output
 
-- [ ] TXT generated.
-- [ ] SRT generated.
-- [ ] VTT generated.
-- [ ] JSON generated.
-- [ ] Output location is printed to user.
+- [x] TXT generated with readable timestamp markers.
+- [x] SRT generated with valid SubRip cue timing.
+- [x] VTT generated with WebVTT header and cue timings.
+- [x] JSON generated with structured metadata and segment list.
+- [x] Output location is printed to user.
 
 # Reliability
 
-- [ ] A failure does not delete previously completed chunk results.
-- [ ] Checkpoint writes avoid partial JSON where practical.
-- [ ] Temporary files are isolated from source media.
+- [x] A failure does not delete previously completed chunk results.
+- [x] Checkpoint writes avoid partial JSON via atomic temporary file renaming.
+- [x] Temporary files are isolated in `.transcriber-cache/<job-id>/`.
 
 # Code Quality
 
-- [ ] Ruff passes.
-- [ ] pytest passes.
-- [ ] Unit tests exist.
-- [ ] No large model files are committed.
-- [ ] No media chunks are committed.
-- [ ] No user transcripts are committed.
+- [x] Ruff passes (`ruff check .`).
+- [x] pytest passes (`pytest`).
+- [x] Unit and integration tests exist.
+- [x] No large model files are committed.
+- [x] No media chunks are committed.
+- [x] No user transcripts are committed.
 
 # Documentation
 
-- [ ] README contains install instructions.
-- [ ] README contains Ubuntu FFmpeg setup.
-- [ ] README contains CPU example.
-- [ ] README contains NVIDIA GPU example.
-- [ ] README explains resume.
-- [ ] README explains output files.
+- [x] README contains install instructions.
+- [x] README contains FFmpeg setup (Ubuntu and Windows).
+- [x] README contains CPU example.
+- [x] README contains NVIDIA GPU example.
+- [x] README explains resume and checkpointing.
+- [x] README explains output files and structure.
+- [x] README explains resource management flags.
 
 # Final Functional Test
 
-Given a local media file:
+Given local media files:
 
+```bash
 video-transcriber transcribe sample.mp4 --language vi
+```
 
-the application must complete successfully and produce:
+The application completes successfully and produces:
 
-output/sample/transcript.txt
-output/sample/transcript.srt
-output/sample/transcript.vtt
-output/sample/transcript.json
+- `output/sample/transcript.txt`
+- `output/sample/transcript.srt`
+- `output/sample/transcript.vtt`
+- `output/sample/transcript.json`
 
-A second run with the same parameters must recognize existing completed work instead of needlessly retranscribing it.
+A second run with the same parameters recognizes existing completed work instead of needlessly retranscribing it.

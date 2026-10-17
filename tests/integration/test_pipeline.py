@@ -23,7 +23,7 @@ def test_pipeline_integration(tmp_path: Path):
     output_dir = tmp_path / "output"
     
     # Mock Whisper to avoid downloading models in CI
-    with patch("video_transcriber.transcriber.WhisperTranscriber") as MockTranscriber:
+    with patch("video_transcriber.pipeline.WhisperTranscriber") as MockTranscriber:
         instance = MockTranscriber.return_value
         instance.transcribe.return_value = ChunkResult(
             chunk_index=0,

@@ -21,6 +21,9 @@ class TranscriptionConfig(BaseModel):
     chunk_minutes: int
     vad_enabled: bool = True
     word_timestamps: bool = False
+    cpu_threads: int = 0
+    throttle_seconds: float = 0.0
+    low_priority: bool = False
 
 class ChunkInfo(BaseModel):
     index: int

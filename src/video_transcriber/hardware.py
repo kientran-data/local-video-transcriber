@@ -1,26 +1,28 @@
+import ctypes
 import shutil
+import sys
 from typing import Tuple
 
 
 def is_cuda_available() -> bool:
     try:
-        # Check if nvidia-smi exists as a quick heuristic
-        if shutil.which("nvidia-smi"):
-            import torch
-            return torch.cuda.is_available()
-    except ImportError:
-        pass
-        
-    # Try ctranslate2 if torch isn't installed
-    try:
+        if not shutil.which("nvidia-smi"):
+            return False
+
         import ctranslate2
-        return ctranslate2.get_cuda_device_count() > 0
-    except ImportError:
-        pass
+        if ctranslate2.get_cuda_device_count() <= 0:
+            return False
+
+        # On Windows, verify cublas runtime library is present and loadable
+        if sys.platform == "win32":
+            try:
+                ctypes.cdll.LoadLibrary("cublas64_12.dll")
+            except OSError:
+                return False
+
+        return True
     except Exception:
-        pass
-        
-    return False
+        return False
 
 def determine_hardware(
     requested_device: str, 

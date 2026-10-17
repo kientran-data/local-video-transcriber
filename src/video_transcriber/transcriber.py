@@ -17,6 +17,18 @@ class WhisperTranscriber:
     def __init__(self, config: TranscriptionConfig):
         self.config = config
         
+        try:
+            import av
+            _orig_av_open = av.open
+
+            def _safe_av_open(*args, **kwargs):
+                kwargs.pop("metadata_errors", None)
+                return _orig_av_open(*args, **kwargs)
+
+            av.open = _safe_av_open
+        except (ImportError, AttributeError):
+            pass
+
         from faster_whisper import WhisperModel
         
         # For auto detection or specified
@@ -26,10 +38,13 @@ class WhisperTranscriber:
         self.model = WhisperModel(
             config.model,
             device=config.device,
-            compute_type=config.compute_type
+            compute_type=config.compute_type,
+            cpu_threads=config.cpu_threads if config.cpu_threads > 0 else 0
         )
         
     def transcribe(self, chunk: ChunkInfo) -> ChunkResult:
+        import time
+
         segments_gen, info = self.model.transcribe(
             chunk.path,
             language=self.language,
@@ -58,6 +73,9 @@ class WhisperTranscriber:
                     words=words
                 )
             )
+
+            if self.config.throttle_seconds > 0:
+                time.sleep(self.config.throttle_seconds)
             
         return ChunkResult(
             chunk_index=chunk.index,
